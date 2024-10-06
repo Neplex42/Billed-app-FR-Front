@@ -26,7 +26,7 @@ export default class NewBill {
     // Ajouter une validation d'extension de fichier
     const validExtensions = ["jpg", "jpeg", "png"]
     if (!validExtensions.includes(fileExtension)) {
-      alert("Seuls les fichiers avec les extensions jpg, jpeg ou png sont acceptés.")
+      alert("Seuls les fichiers aux formats .JPG, .JPEG et .PNG sont acceptés")
       e.target.value = ""
       return
     }
@@ -37,20 +37,20 @@ export default class NewBill {
     formData.append('email', email)
 
     this.store
-      .bills()
-      .create({
-        data: formData,
-        headers: {
-          noContentType: true
-        }
-      })
-      .then(({ fileUrl, key }) => {
-        console.log(fileUrl)
-        this.billId = key
-        this.fileUrl = fileUrl
-        this.fileName = fileName
-      })
-      .catch(error => console.error(error))
+        .bills()
+        .create({
+          data: formData,
+          headers: {
+            noContentType: true
+          }
+        })
+        .then(({ fileUrl, key }) => {
+          console.log(fileUrl)
+          this.billId = key
+          this.fileUrl = fileUrl
+          this.fileName = fileName
+        })
+        .catch(error => console.error(error))
   }
 
   handleSubmit = e => {
@@ -78,12 +78,12 @@ export default class NewBill {
   updateBill = (bill) => {
     if (this.store) {
       this.store
-        .bills()
-        .update({ data: JSON.stringify(bill), selector: this.billId })
-        .then(() => {
-          this.onNavigate(ROUTES_PATH['Bills'])
-        })
-        .catch(error => console.error(error))
+          .bills()
+          .update({ data: JSON.stringify(bill), selector: this.billId })
+          .then(() => {
+            this.onNavigate(ROUTES_PATH['Bills'])
+          })
+          .catch(error => console.error(error))
     }
   }
 }

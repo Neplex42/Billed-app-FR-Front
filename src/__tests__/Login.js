@@ -5,8 +5,9 @@
 import LoginUI from "../views/LoginUI";
 import Login from "../containers/Login.js";
 import { ROUTES } from "../constants/routes";
-import { fireEvent, screen } from "@testing-library/dom";
+import { fireEvent, screen, waitFor } from "@testing-library/dom";
 
+//présent de base
 describe("Given that I am a user on login page", () => {
   describe("When I do not fill fields and I click on employee button Login In", () => {
     test("Then It should renders Login page", () => {
@@ -27,6 +28,7 @@ describe("Given that I am a user on login page", () => {
     });
   });
 
+//présent de base
   describe("When I do fill fields in incorrect format and I click on employee button Login In", () => {
     test("Then It should renders Login page", () => {
       document.body.innerHTML = LoginUI();
@@ -48,6 +50,7 @@ describe("Given that I am a user on login page", () => {
     });
   });
 
+//présent de base
   describe("When I do fill fields in correct format and I click on employee button Login In", () => {
     test("Then I should be identified as an Employee in app", () => {
       document.body.innerHTML = LoginUI();
@@ -101,13 +104,13 @@ describe("Given that I am a user on login page", () => {
       expect(handleSubmit).toHaveBeenCalled();
       expect(window.localStorage.setItem).toHaveBeenCalled();
       expect(window.localStorage.setItem).toHaveBeenCalledWith(
-        "user",
-        JSON.stringify({
-          type: "Employee",
-          email: inputData.email,
-          password: inputData.password,
-          status: "connected",
-        })
+          "user",
+          JSON.stringify({
+            type: "Employee",
+            email: inputData.email,
+            password: inputData.password,
+            status: "connected",
+          })
       );
     });
 
@@ -117,6 +120,7 @@ describe("Given that I am a user on login page", () => {
   });
 });
 
+//présent de base
 describe("Given that I am a user on login page", () => {
   describe("When I do not fill fields and I click on admin button Login In", () => {
     test("Then It should renders Login page", () => {
@@ -213,18 +217,68 @@ describe("Given that I am a user on login page", () => {
       expect(handleSubmit).toHaveBeenCalled();
       expect(window.localStorage.setItem).toHaveBeenCalled();
       expect(window.localStorage.setItem).toHaveBeenCalledWith(
-        "user",
-        JSON.stringify({
-          type: "Admin",
-          email: inputData.email,
-          password: inputData.password,
-          status: "connected",
-        })
+          "user",
+          JSON.stringify({
+            type: "Admin",
+            email: inputData.email,
+            password: inputData.password,
+            status: "connected",
+          })
       );
     });
 
     test("It should renders HR dashboard page", () => {
       expect(screen.queryByText("Validations")).toBeTruthy();
+    });
+  });
+});
+
+// New test for failure of login and calling createUser
+describe("When login fails", () => {
+  test("Then createUser should be called if login fails", async () => {
+    //simule chargement de la page
+    document.body.innerHTML = LoginUI();
+
+    //Simulation d'un utilisateur
+    const inputData = {
+      type: "Employee",
+      email: "employeess@test.tld",
+      password: "employeefail",
+    };
+
+    //On crée un mock (fonction simuléé)
+    const onNavigate = jest.fn();
+    const store = {
+      login: jest.fn().mockRejectedValue(new Error("Login failed")),
+      users: jest.fn(() => ({
+        create: jest.fn().mockResolvedValue({}),
+      })),
+    };
+
+    const login = new Login({
+      document,
+      localStorage: window.localStorage,
+      onNavigate,
+      store,
+    });
+
+    const handleSubmitEmployee = jest.spyOn(login, "handleSubmitEmployee");
+    const createUser = jest.spyOn(login, "createUser");
+
+    const form = screen.getByTestId("form-employee");
+    fireEvent.change(screen.getByTestId("employee-email-input"), { target: { value: inputData.email } });
+    fireEvent.change(screen.getByTestId("employee-password-input"), { target: { value: inputData.password } });
+
+    form.addEventListener("submit", handleSubmitEmployee);
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(createUser).toHaveBeenCalledWith({
+        type: inputData.type,
+        email: inputData.email,
+        password: inputData.password,
+        status: "connected"
+      });
     });
   });
 });
